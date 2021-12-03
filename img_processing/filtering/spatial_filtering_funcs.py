@@ -41,13 +41,14 @@ def convolution_1d(array, w):
     return out.astype(np.uint8)
 
 
-def convolution_2d(image=None, w=None, scale=True):
+def convolution_2d(image=None, w=None, scale=True, flip_filter=True):
     """ Convolve a 2D array with a given 2d filter array, which it is assumed the length and width (denoted k)
     of the filter are equal, odd, and at least k=3.
 
     :param image: (numpy array) image array
     :param w: (numpy array) filter array
     :param scale: (bool) scale array elements to range [0, 255]
+    :param flip_filter: (bool) flip filter to perform spatial convolution (or not to perform spatial correlation)
     :return: convolved image with elements as integers
     """
     imgh, imgw = image.shape[:2]
@@ -65,7 +66,10 @@ def convolution_2d(image=None, w=None, scale=True):
     )
 
     # Flip filter and then perform convolution
-    w_flip = np.flip(w)
+    if flip_filter:
+        w_flip = np.flip(w)
+    else:
+        w_flip = w
 
     for iy in range(pad, imgh+pad):
         for ix in range(pad, imgw+pad):
