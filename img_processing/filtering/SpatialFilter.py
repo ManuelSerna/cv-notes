@@ -31,6 +31,16 @@ class SpatialFilter():
             [-1, 8, -1],
             [-1, -1, -1]
         ])
+        self.laplacian3 = np.array([
+            [0, -1, 0],
+            [-1, 4, -1],
+            [0, -1, 0]
+        ])
+        self.laplacian4 = np.array([
+            [1, 1, 1],
+            [1, -8, 1],
+            [1, 1, 1]
+        ])
 
         self.gaussian = np.array([
             [1, 2, 1],

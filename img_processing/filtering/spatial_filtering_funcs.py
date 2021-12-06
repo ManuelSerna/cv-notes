@@ -41,7 +41,7 @@ def convolution_1d(array, w):
     return out.astype(np.uint8)
 
 
-def convolution_2d(image=None, w=None, scale=True, flip_filter=True):
+def convolution_2d(image=None, w=None, scale=True, flip_filter=True, return_uint8=True):
     """ Convolve a 2D array with a given 2d filter array, which it is assumed the length and width (denoted k)
     of the filter are equal, odd, and at least k=3.
 
@@ -49,6 +49,7 @@ def convolution_2d(image=None, w=None, scale=True, flip_filter=True):
     :param w: (numpy array) filter array
     :param scale: (bool) scale array elements to range [0, 255]
     :param flip_filter: (bool) flip filter to perform spatial convolution (or not to perform spatial correlation)
+    :param return_uint8: (bool) return result array as array of unsigned 8-bit ints?
     :return: convolved image with elements as integers
     """
     imgh, imgw = image.shape[:2]
@@ -77,9 +78,12 @@ def convolution_2d(image=None, w=None, scale=True, flip_filter=True):
 
     # Rescale output to range [0, 255]
     if scale:
-        out = ((255.0 * (out - np.max(out))) / (np.max(out) - np.min(out)))
+        out = (out - np.min(out)) / np.ptp(out) * 255.0
 
-    return out.astype(np.uint8)
+    if return_uint8:
+        return out.astype(np.uint8)
+    else:
+        return out
 
 
 def get_box_filter(size):
@@ -164,3 +168,30 @@ def median_filter(image=None, size=5):
             out[iy-pad, ix-pad] = med
 
     return out.astype(np.uint8)
+
+
+def sharpen(img=None, smoothing_filter=None, contrib_const=1.0):
+    """ Sharpen contents of image via unsharp masking
+
+    :param img: (numpy array) image array
+    :param smoothing_filter: (numpy array) filter used for smoothing image
+    :param contrib_const: (number) weight for how much unsharp mask contributes
+    :return: (numpy array) sharpened image
+    """
+    # Get smoothed image
+    blurred = convolution_2d(
+        image=img,
+        w=smoothing_filter,
+        scale=False,
+        flip_filter=False,
+        return_uint8=False
+    )
+
+    # Get mask
+    mask = img - blurred
+
+    # Add weighted portion of mask to image using constant, then clip values
+    #  (otherwise, we will get a lower-contrast image and sharpness looks much weaker)
+    out = img + contrib_const * mask
+    out = np.clip(out, a_min=0.0, a_max=255.0).astype(np.uint8)
+    return out
