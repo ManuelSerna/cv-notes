@@ -1,0 +1,14 @@
+# Configuration file for NeRF
+exp_name = 'dummy'
+
+# Input data config
+npz_file = data/tiny_nerf_data.npz
+
+# Output config
+# TODO
+
+# Training config
+# TODO
+
+# Evaluation config
+# TODO
