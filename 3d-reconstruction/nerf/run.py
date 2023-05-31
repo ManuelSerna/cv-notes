@@ -36,6 +36,47 @@ def get_config_args():
     return parser
 
 
+def compute_rays(image_data, pose_data, focal_data):
+    """Compute rays r(t) in the form
+
+    r(t) = o + td
+
+    where o and d are the origin and direction vectors, respectively.
+
+    Input:
+        image_data: image data, shape (Num images, Height, Width, 3)
+        pose_data: corresponding camera extrinsics, shape (Num images, 4, 4)
+        focal_data: numpy array of single element; shape (1,)
+    Return:
+        TODO description of return numpy array
+    """
+    rays = None
+    N = image_data.shape[0]
+    H = image_data.shape[1]
+    W = image_data.shape[2]
+
+    # Iterate through all images
+    for idx in range(N):
+        # Get location grid for points in the image
+        x = np.meshgrid(np.linspace(0, W, W, False), indexing='xy')[0]
+        y = np.meshgrid(np.linspace(0, H, H, False), indexing='xy')[0]
+
+        # Define camera coordinate frame (x_c, y_c) points
+        # NOTE: origins are simply center location in image
+        x_camera = (x - 0.5*W) / focal_data
+        y_camera = (y - 0.5*H) / focal_data
+
+        # Compute directions
+
+
+        # Get world coordinate frame points
+        #x_world =
+        #y_world =
+
+        import pdb;pdb.set_trace()
+
+    return rays
+
 def train():
     # Global settings
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
@@ -57,7 +98,14 @@ def train():
             pose_data = data['poses']
             focal_data = data['focal']
 
-    # do more
+            if focal_data.shape == ():
+                # Weird shape of zero
+                focal_data = np.array([focal_data])
+
+    # Generate rays
+    rays = compute_rays(image_data, pose_data, focal_data)
+
+    # Training loop
     # TODO
 
 
