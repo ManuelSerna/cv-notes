@@ -48,34 +48,32 @@ def compute_rays(image_data, pose_data, focal_data):
         pose_data: corresponding camera extrinsics, shape (Num images, 4, 4)
         focal_data: numpy array of single element; shape (1,)
     Return:
-        TODO description of return numpy array
+        tuple: rays array, origins array
     """
-    rays = None
+    rays = []
+    origins = []
+
     N = image_data.shape[0]
     H = image_data.shape[1]
     W = image_data.shape[2]
 
-    # Iterate through all images
+    # Get W*H locations grid for points on the image plane
+    x, y = np.meshgrid(np.arange(W, dtype=np.float32), np.arange(H, dtype=np.float32), indexing='xy')
+
+    # Define camera coordinate frame (x_c, y_c, 1.) points
+    # NOTE: origins are simply center location in image (origin = 1/2 * height or width)
+    camera_pts = np.stack([(x - 0.5 * W) / focal_data, -((y - 0.5 * W) / focal_data), -np.ones_like(x)], axis=-1) # (W, H, 3)
+    camera_pts = camera_pts.reshape(-1, camera_pts.shape[-1])
+
+    # Iterate through all images to get rays
     for idx in range(N):
-        # Get location grid for points in the image
-        x = np.meshgrid(np.linspace(0, W, W, False), indexing='xy')[0]
-        y = np.meshgrid(np.linspace(0, H, H, False), indexing='xy')[0]
-
-        # Define camera coordinate frame (x_c, y_c) points
-        # NOTE: origins are simply center location in image
-        x_camera = (x - 0.5*W) / focal_data
-        y_camera = (y - 0.5*H) / focal_data
-
         # Compute directions
+        rays.append(np.array([pose_data[idx,:3,:3].dot(cam_pt) for cam_pt in camera_pts]))
 
+        # Compute origins
+        origins.append(np.broadcast_to(pose_data[idx,:3,-1], (W*H, 3))) # copy translations W*H times
 
-        # Get world coordinate frame points
-        #x_world =
-        #y_world =
-
-        import pdb;pdb.set_trace()
-
-    return rays
+    return np.array(rays), np.array(origins)
 
 def train():
     # Global settings
@@ -92,6 +90,7 @@ def train():
     focal_data = None
 
     if config.npz_file != "":
+        # .npz file was provided
         print(f'[INFO] Reading data from "{config.npz_file}".')
         with np.load(config.npz_file) as data:
             image_data = data['images']
@@ -103,7 +102,12 @@ def train():
                 focal_data = np.array([focal_data])
 
     # Generate rays
-    rays = compute_rays(image_data, pose_data, focal_data)
+    rays, origins = compute_rays(image_data, pose_data, focal_data)
+
+    import pdb;pdb.set_trace()
+
+    # Sample points along rays
+    # TODO
 
     # Training loop
     # TODO
