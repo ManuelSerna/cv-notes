@@ -159,7 +159,6 @@ def hs_flow(vid_filename:str = None, n_iters:int = 10, write_n_frames:int = None
         V_avg = np.zeros_like(V)
 
         #bottom = (1 / brightness_weight) + Ix @ Ix + Iy @ Iy
-        # TODO: do element-wise squaring of Ix Iy
         bottom = (1/brightness_weight) + (Ix*Ix) + (Iy*Iy)
 
         # Loop to converge for each pixel
