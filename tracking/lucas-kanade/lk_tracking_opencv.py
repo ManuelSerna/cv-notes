@@ -1,4 +1,6 @@
-
+"""
+Lucas-Kanade Tracking using OpenCV
+"""
 
 import argparse
 import cv2
