@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-from Nerf import *
+from NeRF import NeRF
 
 
 def get_config_args():
@@ -75,9 +75,20 @@ def compute_rays(image_data, pose_data, focal_data):
 
     return np.array(rays), np.array(origins)
 
+
+def sample_points_from_rays(near=0.1, far=1.0, num_pts=32):
+    pts = np.linspace(start=near, stop=far, num=num_pts, endpoint=True, dtype=np.float32)
+    
+    return pts
+
+
+def position_encode():#position_encode(input:np.array=None):
+    pass
+
+
 def train():
     # Global settings
-    torch.set_default_tensor_type('torch.cuda.FloatTensor')
+    #torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
     # Get parser configurations
     parser = get_config_args()
@@ -104,10 +115,14 @@ def train():
     # Generate rays
     rays, origins = compute_rays(image_data, pose_data, focal_data)
 
-    import pdb;pdb.set_trace()
-
     # Sample points along rays
     # TODO
+    all_sample_pts = sample_points_from_rays() # use default params for now
+    
+    position_encode()
+    import pdb;pdb.set_trace()
+    
+    # TODO: we will have to place EVERY operation in a nn.Module to make it learnable, including positional encoding, which should go inside a separate function; everything will have to learnable up until we get back to the pixels(?)
 
     # Training loop
     # TODO
