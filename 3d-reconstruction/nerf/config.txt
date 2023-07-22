@@ -1,5 +1,5 @@
 # Configuration file for NeRF
-exp_name = 'dummy'
+exp_name = dummy
 
 # Input data config
 npz_file = data/tiny_nerf_data.npz
@@ -8,7 +8,9 @@ npz_file = data/tiny_nerf_data.npz
 # TODO
 
 # Training config
-# TODO
+optimizer = adam
+lr = 0.001
+n_epochs = 20
 
 # Evaluation config
 # TODO

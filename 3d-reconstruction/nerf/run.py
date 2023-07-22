@@ -3,14 +3,22 @@
 Data file download link obtained via:
 https://www.kaggle.com/code/rkuo2000/tiny-nerf
 
-description here...
+To run:
+
+$ python run.py config.txt
+
+where "config.txt" is the configuration file.
+
 """
 import configargparse
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import torch
 
+
+from NeRFDataset import NeRFDataset
 from NeRF import NeRF
 
 
@@ -18,7 +26,7 @@ def get_config_args():
     """Read configuration 'config_filename.txt' file or go with default configuration values."""
     parser = configargparse.ArgumentParser()
 
-    parser.add_argument('--config', is_config_file=True, help='config file path')
+    parser.add_argument('config', is_config_file=True, help='config file path')
 
     # Input data config
     parser.add_argument('--exp_name', type=str, help='experiment name')
@@ -28,7 +36,9 @@ def get_config_args():
     # TODO
 
     # Training config
-    # TODO
+    parser.add_argument('--optimizer', type=str, help='optimizer: "adam"')
+    parser.add_argument('--lr', type=str, help='learning rate')
+    parser.add_argument('--n_epochs', type=int, help='number of epochs to train for')
 
     # Evaluation config
     # TODO
@@ -73,7 +83,7 @@ def compute_rays(image_data, pose_data, focal_data):
         # Compute origins
         origins.append(np.broadcast_to(pose_data[idx,:3,-1], (W*H, 3))) # copy translations W*H times
 
-    return np.array(rays), np.array(origins)
+    return np.array(rays).astype(np.float32), np.array(origins).astype(np.float32)
 
 
 def sample_points_from_rays(near=0.1, far=1.0, num_pts=32):
@@ -82,7 +92,7 @@ def sample_points_from_rays(near=0.1, far=1.0, num_pts=32):
     return pts
 
 
-def position_encode():#position_encode(input:np.array=None):
+def train_one_epoch():
     pass
 
 
@@ -93,7 +103,7 @@ def train():
     # Get parser configurations
     parser = get_config_args()
     config = parser.parse_args()
-    print(f'[INFO] Read config "{config.config}".')
+    print(f'[INFO] Read config "{config.config}"')
 
     # Load data
     image_data = None
@@ -102,7 +112,7 @@ def train():
 
     if config.npz_file != "":
         # .npz file was provided
-        print(f'[INFO] Reading data from "{config.npz_file}".')
+        print(f'[INFO] Reading data from "{config.npz_file}"')
         with np.load(config.npz_file) as data:
             image_data = data['images']
             pose_data = data['poses']
@@ -112,21 +122,50 @@ def train():
                 # Weird shape of zero
                 focal_data = np.array([focal_data])
 
-    # Generate rays
+    # Generate rays and prepare dataset objects
     rays, origins = compute_rays(image_data, pose_data, focal_data)
+    
+    # TODO: partition images into train and test sets
+    
+    rays = torch.from_numpy(rays)
+    rays = torch.flatten(rays, 0, 1)
+    origins = torch.from_numpy(origins)
+    origins = torch.flatten(origins, 0, 1)
+    
+    # TODO: shuffle rays and origins
+    
+    train_dataset = NeRFDataset(rays, origins)
 
     # Sample points along rays
-    # TODO
-    all_sample_pts = sample_points_from_rays() # use default params for now
-    
-    position_encode()
-    import pdb;pdb.set_trace()
+    # TODO: I should look at the tensorflow implementation and convert the engineering to python
+    #all_sample_pts = sample_points_from_rays() # use default params for now
     
     # TODO: we will have to place EVERY operation in a nn.Module to make it learnable, including positional encoding, which should go inside a separate function; everything will have to learnable up until we get back to the pixels(?)
+    
+    
+    
+    # Get model
+    activation = nn.ReLU()
+    
+    '''model = NeRF(
+        in_dim=, 
+        hidden_dim=256, 
+        activation_func=None
+    )'''
+    
+    # Get optimizer
 
     # Training loop
+    # - will create embedding module and I can choose pos encoding as a choice (only that one for now)
     # TODO
+    
+    import pdb;pdb.set_trace()
+    
+    for i in range(args.n_epochs):
+        train_one_epoch()
 
 
 if __name__ == "__main__":
+    torch.set_default_dtype(torch.float32)
+    
     train()

@@ -6,7 +6,7 @@ class NeRF(nn.Module):
     def __init__(self, in_dim:tuple=None, hidden_dim:int=256, activation_func=None):
         """ Original NeRF model.
         
-        Input:
+        Args:
             in_dim: (tuple) input dimensionality of rays and directions (e.g., of position encodings, raw inputs)
                 - Tuple is (R, D) such that:
                     rays tensor is of shape (1,R)
@@ -59,7 +59,7 @@ class NeRF(nn.Module):
     def forward(self, rays, dirs):
         """ NeRF forward
         
-        Input:
+        Args:
             rays: (torch.tensor) ray information
             dirs: (torch.tensor) direction information
         Output:
